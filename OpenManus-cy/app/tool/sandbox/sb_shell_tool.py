@@ -127,7 +127,7 @@ class SandboxShellTool(SandboxToolsBase):
             session_id=session_id, command_id=response.cmd_id
         )
 
-        return {"output": logs, "exit_code": response.exit_code}
+        return {"output": logs.output, "exit_code": response.exit_code}
 
     async def _execute_command(
         self,

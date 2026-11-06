@@ -1,3 +1,4 @@
+import os
 from contextlib import AsyncExitStack
 from typing import Dict, List, Optional
 
@@ -84,7 +85,11 @@ class MCPClients(ToolCollection):
         exit_stack = AsyncExitStack()
         self.exit_stacks[server_id] = exit_stack
 
-        server_params = StdioServerParameters(command=command, args=args)
+        # 继承完整环境变量，确保 MCP 子进程能读到 DASHSCOPE_API_KEY 等配置
+        # （mcp SDK 默认只传最小环境集，会导致子进程 api_key 为 None）
+        server_params = StdioServerParameters(
+            command=command, args=args, env=os.environ.copy()
+        )
         stdio_transport = await exit_stack.enter_async_context(
             stdio_client(server_params)
         )
