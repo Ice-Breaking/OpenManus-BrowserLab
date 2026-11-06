@@ -2,15 +2,16 @@
 
 浏览器自动化实验室：围绕同一道真实难题，用三条不同技术路线改造 [OpenManus](https://github.com/FoundationAgents/OpenManus)。
 
-本项目的基准任务是「用携程查询 1 月 30 日从上海到北京的机票」。真正的难点不在搜索，而在于**日历选择器**：弹层里的日期格子是动态渲染的，靠 DOM 元素编号（`[40]<input>出发日期</input>`）定位极不稳定——同一个数字 `6` 可能匹配到 `16`、`26`。本仓库的三个目录，就是三种应对思路的完整实现。
+本项目的基准任务是「用携程查询 1 月 30 日从上海到北京的机票」。真正的难点不在搜索，而在于**日历选择器**：弹层里的日期格子是动态渲染的，靠 DOM 元素编号（`[40]<input>出发日期</input>`）定位极不稳定——同一个数字 `6` 可能匹配到 `16`、`26`。本仓库的三个目录，是三种应对思路的完整实现；`OpenManus-all` 则把三条路线合而为一。
 
-## 三条路线
+## 三条路线与终极版
 
 | 目录 | 路线 | 核心做法 | 关键文件 |
 |---|---|---|---|
 | `OpenManus-cy` | **基座**（对照组） | 完整的 OpenManus 框架 + Daytona 云沙箱；浏览器交互沿用元素编号模式，LLM 依据 `[index]<type>text</type>` 选择元素 | `app/agent/{base,react,toolcall,manus}.py`、`app/daytona/`、`app/tool/sandbox/`、`sandbox_main.py` |
 | `OpenManus-rag` | **知识库注入**（稳定优先） | 启动时把 `knowledge/*.txt` 全文拼进 system prompt，引导 Agent 用携程深链 URL 直达航班列表，从根上绕开日历；配套 `ElementClassifier` 给元素打 14 类标签与置信度 | `knowledge/travel_tools.txt`、`app/prompt/manus.py`、`app/tool/element_classifier.py`、`app/tool/url_helper.py` |
 | `OpenManus-gui` | **视觉操作**（通用优先） | 把浏览器接口简化为 `click` / `type` 两个动作，内部三层定位：Playwright Locator → JS 动态查找 → `gui-plus` 视觉模型看截图返回坐标；每次操作自动存 HTML/截图便于排查 | `app/tool/browser_use_tool.py`、`app/prompt/manus.py`、`debug_html/`（运行时产物） |
+| `OpenManus-all` | **三合一终极版** | 以基座为底，同时集成知识库注入、元素分类增强与视觉操作回路：完整 action 枚举（元素编号 + 描述式 `click`/`type` 并存，描述式失败自动回退视觉模型）；视觉模型通过 `config.toml` 的 `[vision]` 段配置化，可切换任意 OpenAI 兼容的多模态服务 | 同上三者全部关键文件的融合版 |
 
 一句话取舍：RAG 路线**确定但不通用**（换个网站就失效），GUI 路线**通用但不稳定**（视觉坐标可能偏）。这也是浏览器自动化方案落地时的核心权衡。
 
@@ -118,6 +119,12 @@ OpenManus-BrowserLab/
     ├── analyze_date_picker.py         # 日历 HTML 离线分析脚本
     ├── test_*.py                      # 手工调试脚本，非自动化测试
     └── debug_html/                    # 运行时生成的页面快照（已忽略）
+
+OpenManus-all/              # 三合一终极版：基座 + RAG 知识库 + 视觉操作
+    ├── knowledge/                    # 知识库（同 rag）
+    ├── app/tool/{element_classifier,url_helper}.py
+    ├── app/tool/browser_use_tool.py  # 完整 action 枚举 + 视觉回路（[vision] 配置化）
+    └── app/prompt/manus.py           # 知识库注入 + 日期规则 + 操作指南融合版
 ```
 
 `OpenManus-gui` 根目录的 `test_*.py` 是迭代过程中手工运行的调试脚本（如 `test_whaleguard_bypass.py` 验证携程反爬预热、`test_smart_mode.py` 对比 HTML 定位路线），不属于单元测试套件。
@@ -125,7 +132,7 @@ OpenManus-BrowserLab/
 ## 已知限制
 
 - `OpenManus-gui` 中 `test_vision_click.py` 调用的 `vision_click` 动作在最终版已并入 `click`/`type` 内部路由，属过程脚本
-- `gui-plus` 的 base_url 在 `browser_use_tool.py` 内硬编码为 DashScope，未读取 `[llm.vision]`
+- `OpenManus-gui` 的 `gui-plus` base_url 在 `browser_use_tool.py` 内硬编码为 DashScope；`OpenManus-all` 已通过 `[vision]` 配置段解决
 - 携程等电商站点有反爬策略（whaleguard），失败属预期现象
 
 ## 致谢
