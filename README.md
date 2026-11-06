@@ -36,7 +36,28 @@ export DASHSCOPE_API_KEY="你的百炼 API Key"
 
 ## 配置说明
 
-每个子项目都有自己的 `config/config.toml`，已预置 DashScope 适配（主模型 `qwen-max`，视觉模型 `qwen-vl-plus`）。
+每个子项目的本地配置文件是 `config/config.toml`，**不入库**（上游 `.gitignore` 约定，防止密钥泄露）。克隆后先从示例复制一份，再把 `[llm]` 改成 DashScope：
+
+```bash
+cd OpenManus-cy   # 或 OpenManus-rag / OpenManus-gui
+cp config/config.example.toml config/config.toml
+```
+
+`[llm]` 与 `[llm.vision]` 的 DashScope 写法（主模型 `qwen-max`，视觉模型 `qwen-vl-plus`）：
+
+```toml
+[llm]
+api_type = "openai"
+model = "qwen-max"
+base_url = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+api_key = ""        # 留空则自动读环境变量 DASHSCOPE_API_KEY
+
+[llm.vision]
+api_type = "openai"
+model = "qwen-vl-plus"
+base_url = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+api_key = ""
+```
 
 | 配置块 | 说明 |
 |---|---|
@@ -55,7 +76,7 @@ daytona_server_url = "https://app.daytona.io/api"
 daytona_target = "us"
 ```
 
-> 填入真实密钥后请勿提交该改动。仓库内的 `config/config.toml` 必须保持密钥为空。
+> `config/config.toml` 整个文件被 `.gitignore` 忽略，填入真实密钥也不会被提交。
 
 ## 运行入口
 

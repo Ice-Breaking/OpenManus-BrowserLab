@@ -4,6 +4,7 @@
 debug_html/
 workspace/
 logs/
+outputs/
 *.log
 
 # Python 编译与缓存
@@ -30,5 +31,5 @@ node_modules/
 # 系统文件
 .DS_Store
 
-# 说明：config/config.toml 已入库且密钥字段为空，
-# 本地填入真实密钥后请勿提交该改动。
+# 说明：各子项目的 config/config.toml 由其自带 .gitignore 忽略（上游约定），
+# 本地填入真实密钥也不会被提交。
