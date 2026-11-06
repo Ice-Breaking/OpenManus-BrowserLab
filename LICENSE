@@ -1,6 +1,9 @@
 MIT License
 
 Copyright (c) 2026 king1208
+Copyright (c) 2025 manna_and_poem (OpenManus, https://github.com/FoundationAgents/OpenManus)
+
+本仓库三个子目录均改编自 FoundationAgents/OpenManus，保留上游原始版权声明。
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
